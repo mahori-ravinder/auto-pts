@@ -136,7 +136,7 @@ class ZephyrCtl:
                 os.system(mode_cmd)
 
                 socat_cmd = (
-                    f"socat.exe -x -v tcp:{socket.gethostbyname(socket.gethostname())}:"
+                    f"C:/Users/SingRavinder/socat-1.7.3.2-1-x86_64/socat-1.7.3.2-1-x86_64/socat.exe -x -s -v tcp:{socket.gethostbyname(socket.gethostname())}:"
                     f"{self.socket_srv.sock.getsockname()[1]},retry=100,interval=1 "
                     f"{self.tty_file},raw,b{SERIAL_BAUDRATE},{flow_control}"
                 )

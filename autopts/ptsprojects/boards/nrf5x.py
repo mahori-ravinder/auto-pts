@@ -27,8 +27,9 @@ def reset_cmd(iutctl):
 
     Dependency: nRF5x command line tools
     """
-
-    return f'nrfjprog -r -s {iutctl.debugger_snr}'
+    print(f"Serial Number: {iutctl.debugger_snr}")
+    return 'C:/Users/SingRavinder/zephyrproject/.venv/Scripts/pyocd.exe reset --target nrf52833'
+    return f'C:/Users/SingRavinder/Binaries/nrfutil.exe device reset --serial-number {iutctl.debugger_snr}'
 
 
 def build_and_flash(zephyr_wd, board, debugger_snr, conf_file=None, project_repos=None,
