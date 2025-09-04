@@ -127,6 +127,7 @@ COMPARED_VALUE = []
 # wid handlers section begin
 
 def hdl_wid_1(params: WIDParams):
+    log(f'RAVE: {hdl_wid_1.__name__}, {params}')
     if 'LT2' in params.test_case_name:
         addr = btp.lt2_addr_get()
     else:
@@ -745,6 +746,7 @@ def hdl_wid_53(params: WIDParams):
 
 
 def hdl_wid_55(params: WIDParams):
+    log(f'RAVE: {hdl_wid_55.__name__}, {params}')
     return btp.verify_multiple_read_description(params.description)
 
 
@@ -1796,6 +1798,7 @@ def hdl_wid_141(params: WIDParams):
 
     Description: Verify that the Implementation Under Test (IUT) can receive multiple characteristics.
     """
+    log(f'RAVE: {hdl_wid_141.__name__}, {params}')
     MMI.reset()
     MMI.parse_description(params.description)
 
@@ -1816,6 +1819,7 @@ def hdl_wid_141(params: WIDParams):
 
 
 def hdl_wid_142(params: WIDParams):
+    log(f'RAVE: {hdl_wid_142.__name__}, {params}')
     MMI.reset()
     MMI.parse_description(params.description)
 
@@ -2058,7 +2062,7 @@ def hdl_wid_400(params: WIDParams):
     Please prepare IUT into an L2CAP Credit Based Connection connectable
     mode using LE signaling channel.
     """
-
+    log(f'RAVE: {hdl_wid_400.__name__}, {params}')
     if 'LT2' in params.test_case_name:
         addr = btp.lt2_addr_get()
     else:

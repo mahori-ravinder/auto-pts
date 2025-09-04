@@ -107,6 +107,7 @@ class Stack:
         self.l2cap = L2cap(psm, initial_mtu)
 
     def gatt_init(self):
+        log(f'RAVE: {self.gatt_init.__name__}')
         self.gatt = Gatt()
         self.gatt_cl = self.gatt
 
@@ -153,6 +154,7 @@ class Stack:
         self.gmcs = GMCS()
 
     def gatt_cl_init(self):
+        log(f'RAVE: {self.gatt_cl_init.__name__}')
         self.gatt_cl = GattCl()
 
     def synch_init(self):

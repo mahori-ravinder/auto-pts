@@ -137,9 +137,9 @@ def add_to_verify_values(item):
     stack.gatt_cl.verify_values.append(item)
 
 
-def get_verify_values():
+def get_verify_values(use_gatt_cl=True):
     stack = get_stack()
-    return stack.gatt_cl.verify_values
+    return stack.gatt_cl.get_verify_values()
 
 
 def extend_verify_values(item):
@@ -178,7 +178,7 @@ def verify_att_error(description):
     return True
 
 
-def verify_description(description):
+def verify_description(description, use_gatt_cl=True):
     """A function to verify that values are in PTS MMI description
 
     Returns True if verification is successful, False if not.
@@ -191,7 +191,7 @@ def verify_description(description):
     description_values = re.findall(r"(?:'|=\s+)([0-9-xA-Fa-f]{2,})", description)
     logging.debug("Description values: %r", description_values)
 
-    verify_values = get_verify_values()
+    verify_values = get_verify_values(use_gatt_cl)
     logging.debug("Verifying values: %r", verify_values)
 
     # verify_values shall not be a string: all its characters will be verified

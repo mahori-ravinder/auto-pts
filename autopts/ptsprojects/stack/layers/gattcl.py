@@ -13,6 +13,7 @@
 # FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License for
 # more details.
 #
+import logging
 from autopts.ptsprojects.stack.common import wait_for_event
 from autopts.ptsprojects.stack.layers import Property
 
@@ -43,6 +44,15 @@ class GattCl:
         self.notifications = []
         self.write_status = None
         self.event_to_await = None
+    
+    # Add a get for verify_values
+    def get_verify_values(self):
+        logging.debug(f'RAVE:GattCl: get_verify_values: {self.verify_values}')
+        return self.verify_values
+    
+    # add setter for verify_values
+    def set_verify_values(self, values):
+        self.verify_values = values
 
     def set_event_to_await(self, event):
         self.event_to_await = event

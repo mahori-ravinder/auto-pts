@@ -1719,6 +1719,7 @@ def gattc_read_multiple_var_rsp(store_val=False, store_rsp=False):
 
 
 def gattc_write_rsp(store_rsp=False, timeout=None):
+    logging.debug(f"RAVE:BTP:Gatt:gattc_write_rsp")
     iutctl = get_iut()
 
     if timeout:

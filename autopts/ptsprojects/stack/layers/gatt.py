@@ -83,7 +83,13 @@ class Gatt:
         self.notification_ev_received = Event()
         self.signed_write_handle = 0
         self.value_len = 0
-
+    # Add a get for verify_values
+    def get_verify_values(self):
+        logging.debug(f'RAVE:Gatt: get_verify_values: {self.verify_values}')
+        return self.verify_values
+    # add setter for verify_values
+    def set_verify_values(self, values):
+        self.verify_values = values
     def attr_value_set(self, handle, value):
         attr = self.server_db.attr_lookup_handle(handle)
         if attr:

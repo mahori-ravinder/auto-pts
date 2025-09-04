@@ -43,6 +43,7 @@ def hdl_wid_1(_: WIDParams):
     Description: Verify that the Implementation Under Test (IUT)
     can accept GATT connect request from PTS.
     """
+    log(f'RAVE:Gattcl:hdl_wid_1')
     stack = get_stack()
     btp.gap_set_conn()
     btp.gap_set_gendiscov()
@@ -743,6 +744,7 @@ def hdl_wid_55(params: WIDParams):
     Description: Verify that the Implementation Under Test (IUT) can send
     Read multiple characteristics.
     """
+    log(f'RAVE:GATTcl: hdl_wid_55')
     MMI.reset()
     MMI.parse_description(params.description)
 
@@ -1305,6 +1307,7 @@ def hdl_wid_141(params: WIDParams):
 
     Description: Verify that the Implementation Under Test (IUT) can receive multiple characteristics.
     """
+    log(f'RAVE:GATTcl: hdl_wid_141')
     MMI.reset()
     MMI.parse_description(params.description)
 
@@ -1315,6 +1318,22 @@ def hdl_wid_141(params: WIDParams):
     # No response expected
     return True
 
+def hdl_wid_142(params: WIDParams):
+    log(f'RAVE:GATTcl: hdl_wid_142')
+    MMI.reset()
+    MMI.parse_description(params.description)
+
+    hdl = MMI.args[0]
+
+    if not hdl:
+        logging.error("parsing error")
+        return False
+    btp.gatt_cl_write(btp.pts_addr_type_get(None), btp.pts_addr_get(None),
+                      hdl, '02', 1)
+
+    #btp.gatt_cl_write_rsp()
+
+    return True
 
 def hdl_wid_147(params: WIDParams):
     """
@@ -1352,4 +1371,23 @@ def hdl_wid_502(_: WIDParams):
     """
     Click OK will disconnect GATT connection.
     """
+    return True
+
+
+def hdl_wid_400(params: WIDParams):
+    """
+    Please prepare IUT into an L2CAP Credit Based Connection connectable
+    mode using LE signaling channel.
+    """
+    log(f'RAVE:GATTcl:hdl_wid_400')
+    if 'LT2' in params.test_case_name:
+        addr = btp.lt2_addr_get()
+    else:
+        addr = btp.pts_addr_get()
+
+    stack = get_stack()
+    gap_ev = stack.gap.gap_wait_for_sec_lvl_change(level=2, timeout=30, addr=addr)
+    if gap_ev is None:
+        return False
+
     return True
