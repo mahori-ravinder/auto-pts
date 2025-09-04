@@ -20,6 +20,7 @@ from autopts.client import get_unique_name
 from autopts.ptsprojects.stack import SynchPoint, get_stack
 from autopts.ptsprojects.testcase import TestFunc
 from autopts.ptsprojects.zephyr.gatt_wid import gatt_wid_hdl
+from autopts.ptsprojects.zephyr.gatt_client_wid import gatt_client_wid_hdl
 from autopts.ptsprojects.zephyr.ztestcase import ZTestCase, ZTestCaseSlave
 from autopts.pybtp import btp
 from autopts.pybtp.types import UUID, Addr, IOCap, Perm, Prop
@@ -401,10 +402,23 @@ def test_cases_client(pts):
         TestFunc(stack.gatt_init)
     ]
 
+    pre_conditions_cl = [TestFunc(btp.core_reg_svc_gap),
+                         TestFunc(btp.gap_read_ctrl_info),
+                         TestFunc(lambda: pts.update_pixit_param(
+                             "GATT", "TSPX_bd_addr_iut",
+                             stack.gap.iut_addr_get_str())),
+                         TestFunc(btp.core_reg_svc_gatt),
+                         TestFunc(btp.core_reg_svc_gatt_cl),
+                         TestFunc(btp.set_pts_addr, pts_bd_addr, Addr.le_public),
+                         TestFunc(stack.gatt_init),
+                         TestFunc(stack.gatt_cl_init)]
     custom_test_cases = [
         # PTS issue #15965
         # ZTestCase("GATT", "GATT/CL/GAW/BV-02-C",
-    ]
+        ZTestCase("GATT", "GATT/CL/GAR/BV-08-C ",
+                             cmds=pre_conditions_cl,
+                             generic_wid_hdl=gatt_client_wid_hdl)
+   ]
 
     test_case_name_list = pts.get_test_case_list('GATT')
     tc_list = []
@@ -418,6 +432,7 @@ def test_cases_client(pts):
 
         for custom_tc in custom_test_cases:
             if tc_name == custom_tc.name:
+                logging.debug(f"RAVE:Using Custom for {tc_name}")
                 instance = custom_tc
                 break
 
