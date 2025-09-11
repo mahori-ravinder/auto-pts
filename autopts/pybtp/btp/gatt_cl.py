@@ -568,7 +568,7 @@ def gatt_cl_read_mult_var_rsp_ev_(gatt_cl, data, data_len):
 
 def gatt_cl_write_rsp_ev_(gatt_cl, data, data_len):
     logging.debug("%s %r", gatt_cl_write_rsp_ev_.__name__, data)
-    
+
     fmt = '<B6sB'
 
     addr_type, addr, status = \

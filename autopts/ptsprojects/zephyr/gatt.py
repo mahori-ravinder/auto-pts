@@ -415,7 +415,7 @@ def test_cases_client(pts):
     custom_test_cases = [
         # PTS issue #15965
         # ZTestCase("GATT", "GATT/CL/GAW/BV-02-C",
-        ZTestCase("GATT", "GATT/CL/GAR/BV-08-C ",
+        ZTestCase("GATT", "GATT/CL/GAR/BV-08-C",
                              cmds=pre_conditions_cl,
                              generic_wid_hdl=gatt_client_wid_hdl)
    ]

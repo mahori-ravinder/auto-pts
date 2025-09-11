@@ -122,9 +122,13 @@ def gatt_notification_ev_(gatt, data, data_len):
     gatt.notification_ev_recv(addr_type, addr, notification_type, handle, value)
 
 
+def gatt_read_multi_resp_ev_(gatt, data, data_len):
+    logging.debug("RAVE:BTP:GATT:gatt_read_multi_resp_ev_")
+
 GATT_EV = {
     defs.BTP_GATT_EV_ATTR_VALUE_CHANGED: gatt_attr_value_changed_ev_,
     defs.BTP_GATT_EV_NOTIFICATION: gatt_notification_ev_,
+    defs.BTP_GATT_CMD_READ_MULTIPLE_VAR: gatt_read_multi_resp_ev_
 }
 
 
@@ -889,6 +893,7 @@ def gattc_read_multiple(bd_addr_type, bd_addr, *hdls):
 
 
 def gattc_read_multiple_var(bd_addr_type, bd_addr, *hdls):
+    logging.debug("RAVE:BTP:GATT:READ_MULTIPLE_VAR")
     logging.debug("%s %r %r %r", gattc_read_multiple_var.__name__, bd_addr_type,
                   bd_addr, hdls)
     iutctl = get_iut()
@@ -897,6 +902,7 @@ def gattc_read_multiple_var(bd_addr_type, bd_addr, *hdls):
 
     data_ba = _create_read_multiple_req(bd_addr_type, bd_addr, *hdls)
     iutctl.btp_socket.send(*GATTC['read_multiple_var'], data=data_ba)
+    gatt_command_rsp_succ()
 
 
 def gattc_write_without_rsp(bd_addr_type, bd_addr, hdl, val, val_mtp=None):
@@ -1683,7 +1689,7 @@ def gattc_read_multiple_rsp(store_val=False, store_rsp=False):
                   defs.BTP_GATT_CMD_READ_MULTIPLE)
 
     rsp, values = gatt_dec_read_rsp(tuple_data[0])
-    logging.debug("%s %r %r", gattc_read_multiple_rsp.__name__, rsp, values)
+    logging.debug("RAVE:BTP:GATT: %s %r %r", gattc_read_multiple_rsp.__name__, rsp, values)
 
     if store_rsp or store_val:
         clear_verify_values()

@@ -1852,6 +1852,7 @@ def hdl_wid_147(params: WIDParams):
 
     Description: Verify that the Implementation Under Test (IUT) can receive multiple characteristics.
     """
+    logging.debug(f"RAVE:WID:GATT:hdl_wid_147, {params}")
     MMI.reset()
     MMI.parse_description(params.description)
 
@@ -1859,6 +1860,7 @@ def hdl_wid_147(params: WIDParams):
     hdl2 = MMI.args[1]
     btp.gattc_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
     btp.gattc_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
+    btp.gattc_read_multiple_rsp(store_rsp=True, store_val=False)
     return True
 
 
