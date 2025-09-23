@@ -606,7 +606,9 @@ class TestCase(PTSCallback):
         return None
 
     def handle_mmi_generic(self, wid, description, style, test_case_name):
+        log("%s %s", self, " >> handle_mmi_generic")
         response = self.generic_wid_hdl(wid, description, test_case_name)
+        log("%s %s", self, " << handle_mmi_generic")
 
         if isinstance(response, ResponseWithPostWID):
             next_steps = response.next_steps

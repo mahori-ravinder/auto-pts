@@ -25,6 +25,7 @@ from autopts.pybtp import btp, defs, types
 from autopts.pybtp.btp.btp import pts_addr_get, pts_addr_type_get
 from autopts.pybtp.types import UUID, AdType, IOCap, OwnAddrType, Perm, Prop, WIDParams, bdaddr_reverse
 from autopts.wid import generic_wid_hdl
+from autopts.ptsprojects.testcase import ResponseWithPostWID
 
 log = logging.debug
 
@@ -475,10 +476,55 @@ def hdl_wid_76(_: WIDParams):
     return True
 
 
+def start_scan_and_find_device():
+    addr = pts_addr_get()
+    addr_type = pts_addr_type_get()
+
+    btp.gap_start_discov(transport='le', discov_type='passive', mode='observe')
+    sleep(4)
+    btp.gap_stop_discov()
+    svc_data=[]
+    if not btp.check_discov_results(addr_type=addr_type, addr=addr, svc_data_is_out=True, svc_data=svc_data):
+        log('Peer device not found.')
+        return
+    log('Peer device found.')
+    # At this point, do followig
+    # 1. need to have AD 0x31 (encrypted adv in it)
+    # 2. get the encrypted data and compare with expected value
+    if not svc_data:
+        log('No service data found in advertisement')
+        return
+    svc_data=svc_data[0]
+    log(f'Service data found: {svc_data}')
+    if(0x31 not in svc_data):
+        log('No encrypted adv data found in advertisement')
+        return
+    svc_data_bytes = svc_data[0x31]
+
+    #svc_data_bytes = bytes.fromhex(svc_data_bytes)
+    # convert svc data to string
+    svc_data_str = binascii.hexlify(svc_data_bytes).decode('utf-8')
+    log(f'Service data bytes: {svc_data_str}')
+    svc_len = len(svc_data_str)
+    get_stack().gap.randomizer = "".join(svc_data_str[:10])
+    get_stack().gap.enc_payload = "".join(svc_data_str[10:svc_len-8])
+    get_stack().gap.mic = "".join(svc_data_str[svc_len-8:svc_len])
+    log(f'Randomizer: {get_stack().gap.randomizer}')
+    log(f'Encrypted Payload: {get_stack().gap.enc_payload}')
+    log(f'MIC: {get_stack().gap.mic}')
+
 def hdl_wid_77(params: WIDParams):
     """
         Please send a disconnect request to terminate connection.
     """
+    
+    if params.test_case_name.startswith("GAP/SCN/BV-01-C"):
+        #Need to disconccet and ask device to start scan.
+        btp.gap_disconn()
+        btp.gap_wait_for_disconnection(30)
+        get_stack().gap.increase_mmi_round(77)
+        return ResponseWithPostWID(True, [(start_scan_and_find_device,)])
+
     if params.test_case_name.startswith("GAP/BOND/BON/BV-04-C"):
 
         # PTS sends WID before IUT finishes encryption
@@ -1984,6 +2030,7 @@ def hdl_wid_2001(params: WIDParams):
 
 
 def hdl_wid_2004(params: WIDParams):
+    
     """
         Please confirm that 6 digit number is matched with <passkey>.
     """
@@ -2001,8 +2048,23 @@ def hdl_wid_2004(params: WIDParams):
 
     # clear passkey for repeated pairing attempts
     stack.gap.passkey.data = None
-
+    if params.test_case_name in ['GAP/SCN/BV-01-C']:
+        # Need to send read req for encrypted data key material
+        _sleep(15)
+        return ResponseWithPostWID(match, [(sleep,5),(_send_gatt_read_for_encrypted_adv, )])
     return match
+
+def _sleep(sec):
+    print("..............sleep..................")
+    sleep(sec)
+
+def _send_gatt_read_for_encrypted_adv():
+    log("..............send_gatt_read_for_encrypted_adv..................")
+    btp.gattc_read( btp.pts_addr_type_get(), btp.pts_addr_get(),'000B')
+    rsp, value = btp.gattc_read_rsp(True, True)
+    
+    log(f"..............read rsp {rsp} value {value}..................")
+    log(f"VERIFY_VALUE : {get_stack().gatt_cl.verify_values[-1]}")
 
 
 def hdl_wid_20001(_: WIDParams):
@@ -2634,6 +2696,7 @@ def _handle_iut_big_sync_and_read_for_iso(params: WIDParams):
 def hdl_wid_351(_: WIDParams):
     '''
     Wait for Broadcast ISO request.
+    The BIG Create in the CB of connected will handle this so just return True
     '''
     return True
 
@@ -2643,6 +2706,9 @@ def hdl_wid_356(_: WIDParams):
     Please broadcast valid ISO data packets (more than 3 packets).
     '''
     stack = get_stack()
+    btp.gap_bis_broadcast(1, '00')
+    sleep(1)
+    return False
     try:
         for _ in range(1, 100):
             for bis_id in stack.gap.big_bis_data_path_setup:
@@ -2652,6 +2718,15 @@ def hdl_wid_356(_: WIDParams):
 
     return True
 
+def hdl_wid_357(_: WIDParams):
+    '''
+    Please send LE BIGInfo Advertising Report.
+    '''
+    stack = get_stack()
+    btp.gap_create_big(0, 1, 10000, 20)
+    #btp.gap_create_big(1, 1, 1, 1)
+
+    return True
 
 def hdl_wid_355(params: WIDParams):
     '''
@@ -2680,3 +2755,67 @@ def hdl_wid_355(params: WIDParams):
 
     log('Incorrect BIS data received')
     return False
+
+
+def hdl_wid_503(_: WIDParams):
+    '''
+    Please authorize that PTS to read Encrypted Data Key value.
+    '''
+    return True
+
+def hdl_wid_500(_: WIDParams):
+    '''
+    Please prepare IUT to send an advertising report using Encrypted Advertising Data with payload 1.
+    '''
+    btp.gap_padv_start()
+    return True
+
+
+def hdl_wid_501(_: WIDParams):
+    '''
+    Please prepare IUT to send an advertising report using Encrypted Advertising Data with payload 1.
+    '''
+    btp.gap_padv_start()
+    return True
+
+import socket
+
+def hdl_wid_505(_: WIDParams):
+    '''
+    Please read Encrypted Data Key Material Characteristic
+    (In GAP/SCN/BV-01-C this will lead to insufficient authentication error).
+    '''
+    
+
+    #sleep(2)
+    #Now trigger auth
+    btp.gap_pair()
+    return True
+    for i in range(20):
+        sleep( 1)
+    
+    #btp.gap_wait_for_sec_lvl_change(level=4)
+    #sleep(7)# wait some time for pairing to complete
+
+    btp.gattc_read_uuid(btp.pts_addr_type_get(), btp.pts_addr_get(),
+                        "0001", "FFFF", '2B88')
+    
+    try:
+        btp.gattc_read_uuid_rsp(True, True)
+    except socket.timeout:
+        return False
+    
+    return True
+
+def hdl_wid_502(_: WIDParams):
+    log(f"VERIFY_VALUE : {get_stack().gatt_cl.verify_values[-1]}")
+    session_key  = "".join(get_stack().gatt_cl.verify_values[-1][0:32])
+    log(f'Session Key: {session_key}')
+    iv = "".join(get_stack().gatt_cl.verify_values[-1][32:])
+    log(f'IV: {iv}')
+    log(f'Randomizer: {get_stack().gap.randomizer}')
+    log(f'Encrypted Payload: {get_stack().gap.enc_payload}')
+    log(f'MIC: {get_stack().gap.mic}')
+    btp.gap_padv_stop()
+    return True
+

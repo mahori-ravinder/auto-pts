@@ -1410,7 +1410,7 @@ def parse_eir_data(eir):
     return data
 
 
-def check_discov_results(addr_type=None, addr=None, discovered=True, eir=None, uuids=None, svc_data=None):
+def check_discov_results(addr_type=None, addr=None, discovered=True, eir=None, uuids=None, svc_data=None, svc_data_is_out=False):
     addr = pts_addr_get(addr).encode('utf-8')
     addr_type = pts_addr_type_get(addr_type)
 
@@ -1452,6 +1452,9 @@ def check_discov_results(addr_type=None, addr=None, discovered=True, eir=None, u
                     continue
 
         found = True
+        if svc_data_is_out:
+            svc_data.append(data)
+        logging.debug(f"EIR: {data}")
         break
 
     if discovered == found:
@@ -1503,6 +1506,15 @@ def gap_padv_start(flags=0):
     tuple_data = gap_command_rsp_succ(defs.BTP_GAP_CMD_PADV_START)
     __gap_current_settings_update(tuple_data)
 
+
+def gap_padv_stop():
+    logging.debug("%s", gap_padv_stop.__name__)
+
+    iutctl = get_iut()
+
+    iutctl.btp_socket.send(*GAP['padv_stop'])
+
+    tuple_data = gap_command_rsp_succ(defs.BTP_GAP_CMD_PADV_STOP)
 
 def gap_padv_set_data(data):
     logging.debug("%s", gap_padv_set_data.__name__)

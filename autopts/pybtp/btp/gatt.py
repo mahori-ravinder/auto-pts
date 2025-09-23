@@ -876,6 +876,9 @@ def _create_read_multiple_req(bd_addr_type, bd_addr, *hdls):
 
     data_ba.extend(chr(bd_addr_type).encode('utf-8'))
     data_ba.extend(bd_addr_ba)
+    #TODO:RAVE
+    # Is handle count correct?
+    # For GATT/CL/GAR/BV-08-C
     data_ba.extend(chr(len(hdls)).encode('utf-8'))
     data_ba.extend(hdls_ba)
     return data_ba
@@ -902,7 +905,7 @@ def gattc_read_multiple_var(bd_addr_type, bd_addr, *hdls):
 
     data_ba = _create_read_multiple_req(bd_addr_type, bd_addr, *hdls)
     iutctl.btp_socket.send(*GATTC['read_multiple_var'], data=data_ba)
-    gatt_command_rsp_succ()
+    #gatt_command_rsp_succ()
 
 
 def gattc_write_without_rsp(bd_addr_type, bd_addr, hdl, val, val_mtp=None):

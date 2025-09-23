@@ -32,8 +32,38 @@ class SVC:
 class CHAR:
     name = (None, None, None, UUID.device_name)
 
+SESSION_KEY = '0102030405060708090A0B0C0D0E0F10'#16 octets
+IV = '0102030405060708'#8 octets
 
-init_gatt_db = [TestFunc(btp.gatts_add_svc, 0, UUID.VND16_1),
+#SESSION_KEY = '196A0AD12A61201E136E2ED112DAA957' #16 octets
+#IV = '9E7A00EFB17AE746'#8 octets
+
+init_gatt_db = [ 
+    TestFunc(btp.gatts_add_svc, 0, '0018'),
+                # TODO:RAVE
+                # Adding BT_UUID_GATT_EDKM
+                TestFunc(btp.gatts_add_char, 0,
+                         Prop.read,
+                         Perm.read,
+                         '2B88'),
+                TestFunc(btp.gatts_set_val, 0, SESSION_KEY+IV),
+                TestFunc(btp.gatts_add_char, 0,
+                         Prop.read,
+                         Perm.read,
+                         '882B'),
+                TestFunc(btp.gatts_set_val, 0, SESSION_KEY+IV),
+
+
+                TestFunc(btp.gatts_add_svc, 0, UUID.VND16_1),
+                # TODO:RAVE
+                # Adding BT_UUID_GATT_EDKM
+                TestFunc(btp.gatts_add_char, 0,
+                         Prop.read,
+                         Perm.read,
+                         '2B88'),
+                TestFunc(btp.gatts_set_val, 0, SESSION_KEY+IV),
+                
+               
                 TestFunc(btp.gatts_add_char, 0, Prop.read,
                          Perm.read | Perm.read_authn,
                          UUID.VND16_2),
@@ -52,7 +82,8 @@ init_gatt_db = [TestFunc(btp.gatts_add_svc, 0, UUID.VND16_1),
                          Perm.read_authn | Perm.write_authn,
                          UUID.VND16_5),
                 TestFunc(btp.gatts_set_val, 0, '04'),
-                TestFunc(btp.gatts_start_server)]
+                
+                TestFunc(btp.gatts_start_server),]
 
 init_gatt_db2 = [TestFunc(btp.gatts_add_svc, 0, UUID.VND16_1),
                  TestFunc(btp.gatts_add_char, 0,
@@ -76,7 +107,7 @@ br_initial_mtu = 120
 
 # Ad data for periodic advertising in format (type, data)
 # Value: shortened name
-periodic_data = (0x08, "PADV_Tester")
+periodic_data = (0x08, "RAVE_PADV_Tester")
 
 BROADCAST_CODE = '0102680553F1415AA265BBAFC6EA03B8'
 
@@ -170,7 +201,7 @@ def test_cases(ptses):
 
     pts_bd_addr = pts.q_bd_addr
 
-    iut_device_name = get_unique_name(pts)
+    iut_device_name = 'HHello'.encode('utf-8')# get_unique_name(pts)
     ad_str_flags = str(AdType.flags).zfill(2) + \
                    str(AdFlags.br_edr_not_supp).zfill(2)
     ad_str_flags_len = str(len(ad_str_flags) // 2).zfill(2)
