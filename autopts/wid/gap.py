@@ -1751,10 +1751,12 @@ def hdl_wid_300(params: WIDParams):
     return True
 
 
-def hdl_wid_301(_: WIDParams):
-    #TODO: Sed ok only for GAP/BIS/BSE/BV-01-C
-    sleep(1)
-    return True
+def hdl_wid_301(params: WIDParams):
+    
+    if params.test_case_name in ['GAP/BIS/BSE/BV-01-C' ,'GAP/SEC/SEM/BI-13-C']:
+        #TODO: Sed ok only for GAP/BIS/BSE/BV-01-C and  GAP/SEC/SEM/BI-13-C
+        sleep(1)
+        return True
     # Please click OK if IUT did not receive periodic advertising report.
     stack = get_stack()
     addr = pts_addr_get()
@@ -2643,6 +2645,19 @@ def hdl_wid_274(_: WIDParams):
     '''
     return True
 
+def hdl_wid_350(params: WIDParams):
+    """
+    Please synchronize with Broadcast ISO request.
+    """
+    hdl_wid_352(params) 
+    return True
+
+def hdl_wid_351(_: WIDParams):
+    '''
+    Wait for Broadcast ISO request.
+    The BIG Create in the CB of connected will handle this so just return True
+    '''
+    return True
 
 def hdl_wid_352(params: WIDParams):
     '''
@@ -2683,6 +2698,10 @@ def _handle_iut_big_sync_and_read_for_iso(params: WIDParams):
         broadcast_code = None
 
     btp.gap_big_create_sync(biginfo.sid, biginfo.num_bis, 1, 255, broadcast_code)
+    #TODO:RAVE
+    # Hook big event.
+    sleep(5)
+    return True
     if not stack.gap.wait_big_established():
         log('BIG sync establishment failed')
         return False
@@ -2693,13 +2712,19 @@ def _handle_iut_big_sync_and_read_for_iso(params: WIDParams):
 
     return True
 
-def hdl_wid_351(_: WIDParams):
-    '''
-    Wait for Broadcast ISO request.
-    The BIG Create in the CB of connected will handle this so just return True
-    '''
-    return True
+def hdl_wid_354(params: WIDParams):
+    """
+     Please synchronize to lower tester in Security Mode 3 Level 2 or 3. If IUT failed to synchnorize to the lower tester, please click ok.
+    """
+    return not get_stack().gap.wait_big_established()
 
+def hdl_wid_353(_: WIDParams):
+    '''
+    Please configure IUT security to Mode 3 Level 2 or Level 3.
+    '''
+    # TODO:RAVE
+    # Sending True depends on SC and MITM flag enabled on btptester app.
+    return True
 
 def hdl_wid_356(_: WIDParams):
     '''

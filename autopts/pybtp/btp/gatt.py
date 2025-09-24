@@ -102,6 +102,8 @@ GATTC = {
                      CONTROLLER_INDEX),
     'eatt_connect': (defs.BTP_SERVICE_ID_GATT, defs.BTP_GATT_CMD_EATT_CONNECT,
                      CONTROLLER_INDEX),
+    'read_multi_bearer': (defs.BTP_SERVICE_ID_GATT, defs.BTP_GATT_CMD_READ_MULTIPLE_VAR_WITH_BEARER,
+                           CONTROLLER_INDEX),
 }
 
 
@@ -128,7 +130,7 @@ def gatt_read_multi_resp_ev_(gatt, data, data_len):
 GATT_EV = {
     defs.BTP_GATT_EV_ATTR_VALUE_CHANGED: gatt_attr_value_changed_ev_,
     defs.BTP_GATT_EV_NOTIFICATION: gatt_notification_ev_,
-    defs.BTP_GATT_CMD_READ_MULTIPLE_VAR: gatt_read_multi_resp_ev_
+    defs.BTP_GATT_EV_READ_MULTI_BEARER_RSP: gatt_read_multi_resp_ev_
 }
 
 
@@ -884,6 +886,28 @@ def _create_read_multiple_req(bd_addr_type, bd_addr, *hdls):
     return data_ba
 
 
+def _create_read_multiple_with_bearer_req(bd_addr_type, bd_addr, eatts:list, handles:list):
+    data_ba = bytearray()
+
+    bd_addr_ba = addr2btp_ba(bd_addr)
+    hdls_j = ''.join(hdl for hdl in handles)
+    hdls_byte_table = [hdls_j[i:i + 2] for i in range(0, len(hdls_j), 2)]
+    hdls_swp = ''.join([c[1] + c[0] for c in zip(hdls_byte_table[::2],
+                                                 hdls_byte_table[1::2])])
+    hdls_ba = binascii.unhexlify(hdls_swp)
+
+    data_ba.extend(chr(bd_addr_type).encode('utf-8'))
+    data_ba.extend(bd_addr_ba)
+    #TODO:RAVE
+    # Is handle count correct?
+    # For GATT/CL/GAR/BV-08-C
+    data_ba.extend(chr(len(handles)).encode('utf-8'))
+    eatts.extend([1,2,3,4,5])
+    for i in range(5):
+        data_ba.extend(struct.pack('B', eatts[i]))
+    data_ba.extend(hdls_ba)
+    return data_ba
+
 def gattc_read_multiple(bd_addr_type, bd_addr, *hdls):
     logging.debug("%s %r %r %r", gattc_read_multiple.__name__, bd_addr_type,
                   bd_addr, hdls)
@@ -905,7 +929,18 @@ def gattc_read_multiple_var(bd_addr_type, bd_addr, *hdls):
 
     data_ba = _create_read_multiple_req(bd_addr_type, bd_addr, *hdls)
     iutctl.btp_socket.send(*GATTC['read_multiple_var'], data=data_ba)
-    #gatt_command_rsp_succ()
+    gatt_command_rsp_succ()
+
+def gattc_read_multiple_var_with_bearer(bd_addr_type, bd_addr, eatt_pairs:list, handles:list):
+    logging.debug("RAVE:BTP:GATT:gattc_read_multiple_var_with_bearer")
+    logging.debug("%s %r %r %r %r", gattc_read_multiple_var_with_bearer.__name__, bd_addr_type,
+                  bd_addr, eatt_pairs, handles)
+    iutctl = get_iut()
+
+    gap_wait_for_connection()
+
+    data_ba = _create_read_multiple_with_bearer_req(bd_addr_type, bd_addr, eatt_pairs, handles)
+    iutctl.btp_socket.send(*GATTC['read_multi_bearer'], data=data_ba)
 
 
 def gattc_write_without_rsp(bd_addr_type, bd_addr, hdl, val, val_mtp=None):

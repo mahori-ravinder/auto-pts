@@ -1430,7 +1430,7 @@ def check_discov_results(addr_type=None, addr=None, discovered=True, eir=None, u
             continue
         if eir and eir != device.eir:
             continue
-
+        data = None
         if device.eir:
             data = parse_eir_data(device.eir)
             if uuids and ((AdType.uuid16_some in data) or

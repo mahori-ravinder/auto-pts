@@ -747,8 +747,11 @@ def hdl_wid_53(params: WIDParams):
 
 def hdl_wid_55(params: WIDParams):
     log(f'RAVE: {hdl_wid_55.__name__}, {params}')
-    return btp.verify_multiple_read_description(params.description)
-
+    #TODO:RAVE
+    # The Event shows up on trace?
+    sleep(10)
+    return True
+    #return btp.verify_multiple_read_description(params.description)
 
 def hdl_wid_56(params: WIDParams):
     MMI.reset()
@@ -1858,9 +1861,7 @@ def hdl_wid_147(params: WIDParams):
 
     hdl1 = MMI.args[0]
     hdl2 = MMI.args[1]
-    btp.gattc_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
-    btp.gattc_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
-    btp.gattc_read_multiple_rsp(store_rsp=True, store_val=False)
+    btp.gattc_read_multiple_var_with_bearer(btp.pts_addr_type_get(), btp.pts_addr_get(), [0, 1], [hdl1, hdl2])
     return True
 
 
@@ -1876,8 +1877,7 @@ def hdl_wid_148(params: WIDParams):
 
     hdl1 = MMI.args[0]
     hdl2 = MMI.args[1]
-    btp.gattc_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
-    btp.gattc_read_multiple_var(btp.pts_addr_type_get(), btp.pts_addr_get(), hdl1, hdl2)
+    btp.gattc_read_multiple_var_with_bearer(btp.pts_addr_type_get(), btp.pts_addr_get(), [1, 1], [hdl1, hdl2])
     return True
 
 

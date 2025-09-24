@@ -699,6 +699,22 @@ Commands and responses:
 
                 In case of error, the error response will be returned.
 
+        Opcode 0x22 - Read Multiple Variable Length Characteristic Values with Bearer
+
+                Controller Index:       <controller id>
+                Command parameters:     Address_Type (1 octet)
+                                        Address (6 octets)
+                                        Handles_Count (1 octet)
+                                        Handle count times:
+                                            BEARER (1 octet) //0 for ATT, 1 for EATT
+                                        Handle count times:
+                                            Handle (2 octet)
+                Response parameters:    None
+
+                This procedure is used to read multiple variable length
+                Characteristic Values from a server. For each read the bearer is also provided.
+                The result comes back in event. each event has handle value pair.
+
 Events:
         Opcode 0x80 - Notification/Indication Received
 
@@ -728,4 +744,13 @@ Events:
                 (characteristic or descriptor) value changed.
                 Event is triggered when ATT Write operation to Tester GATT
                 Server has been performed successfully.
+        
+        Opcode 0x82 - Read Multiple with Bearer response event
+
+                Controller Index:       <controller id>
+                Event parameters:       Handle (2 octets)
+                                        Data_Length (2 octet)
+                                        Data (1-512 octets)
+
+                This event command is used to send the response for read multiple with bearer response.
 
